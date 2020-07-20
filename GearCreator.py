@@ -1,3 +1,10 @@
+'''
+Called with:
+import GearCreatorTool as gc
+reload(gc)
+gc.GearCreatorUI().show()
+'''
+
 from maya import cmds
 from maya import OpenMayaUI as opui
 from Qt import QtWidgets, QtCore, QtGui
@@ -9,7 +16,7 @@ def GetMayaMainWindow():
     ptr = wrapInstance(long(win), QtWidgets.QMainWindow)
     return ptr
 
-
+# Gear Creator UI
 class GearCreatorUI(QtWidgets.QDialog):
     def __init__(self):
         parent = GetMayaMainWindow()
@@ -103,7 +110,7 @@ class GearCreatorUI(QtWidgets.QDialog):
         self.teethSlider.setValue(10)
         self.lengthSpinBox.setValue(0.3)
 
-
+# Gear Object
 class Gear(object):
     def __init__(self):
         self.transform = None
@@ -111,6 +118,12 @@ class Gear(object):
         self.extrude = None
 
     def CreateGear(self, teeth = 10, length = 0.3):
+        '''
+        Create a gear with the given parameters
+        Args:
+            teeth: number of teeth
+            length: Length of the teeth
+        '''
         self.transform, self.node = cmds.polyPipe(subdivisionsAxis = teeth * 2)
         cmds.select(clear =True)
 
@@ -122,6 +135,14 @@ class Gear(object):
         cmds.select(clear = True)
 
     def GetTeethFaces(self,teeth):
+        '''
+        Get the gear's teeth faces
+        Args:
+            teeth: Number of teeth
+
+        Returns:
+            The face names selected to edit the teeth
+        '''
         spans = teeth * 2
         sideFaces = range(spans * 2, spans * 3, 2)
 
@@ -131,10 +152,21 @@ class Gear(object):
         return faces
 
     def ChangeTeeth(self, teeth = 10):
+        '''
+          Change the teeth's number
+        Args:
+            teeth: Number of teeth
+
+        '''
         cmds.polyPipe(self.node, edit = True, subdivisionsAxis = teeth * 2)
 
         faces = self.GetTeethFaces(teeth)
         cmds.setAttr("%s.inputComponents" % self.extrude, len(faces), * faces, type = "componentList")
 
     def ChangeLength(self, length = 0.3):
+        '''
+        Change the teeth's length
+        Args:
+            length: Length of the teeth
+        '''
         cmds.polyExtrudeFacet(self.extrude, edit = True, localTranslateZ = length)
